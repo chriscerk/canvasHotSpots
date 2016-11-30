@@ -2,8 +2,9 @@
 var canvases = [];
 var contexts = [];
 var imageObjs = [];
+var hotspots = [];
 
-var hotspots = {
+var hotspotsModule = {
     initCanvas: function(canvasId) {
       canvases[canvasId] = document.getElementById(canvasId);
       contexts[canvasId] = canvases[canvasId].getContext('2d');
@@ -11,26 +12,13 @@ var hotspots = {
     },
 
     initCanvasWithDims: function(canvasId, width, height) {
-      hotspots.initCanvas(canvasId);
+      hotspotsModule.initCanvas(canvasId);
       setCanvasSize(canvasId, width, height);
       refreshCanvas(canvasId, padding);
     },
 
-    initCanvasImg: function(canvasId, image) {
-      hotspots.initCanvas(canvasId);
-
-      imageObj.onload = function() {
-          var imgWidth = this.width;
-          var imgHeight = this.height;
-
-          setCanvasSize(imgWidth, imgHeight);
-          refreshCanvas(canvasId, padding);
-      };
-      imageObj.src = image;
-    },
-
-    initCanvasImg: function(canvasId, image, padding, desiredImgWidth, elements) {
-      hotspots.initCanvas(canvasId);
+    initCanvasImg: function(canvasId, image, padding, desiredImgWidth, myHotspots) {
+      hotspotsModule.initCanvas(canvasId);
 
       imageObjs[canvasId].onload = function() {
           var imgWidth = this.width;
@@ -45,61 +33,54 @@ var hotspots = {
           refreshCanvas(canvasId, padding);
       };
       imageObjs[canvasId].src = image;
+      hotspots[canvasId] = myHotspots;
 
-      hotspots.initHotSpotEvents(canvasId, events, elements);
+      hotspotsModule.initHotSpotEvents(canvasId);
 
       canvases[canvasId].onmousemove=function(e) {
-        var isHotspot = checkIfHotspot(canvasId, e, padding, elements);
-        if(isHotspot) {
-          console.log('HOTSPOT!');
-        }
+        renderHotspots(canvasId, e, padding);
       };
     },
 
-    displayDialogueBox: function(canvasId, size, padding){
-      var dialogueSize = size;
-      var originalCanvasHeight = contexts[canvasId].canvas.height;
-      var originalCanvasWidth = contexts[canvasId].canvas.width;
+    displayAllHotspots: function(canvasId, color) {
+      hotspots[canvasId].forEach(function(hs) {
+          drawHotspot(canvasId, hs.x, hs.y, hs.size, color);
 
-      setCanvasSize(canvasId, originalCanvasWidth, originalCanvasHeight + dialogueSize);
-      refreshCanvas(canvasId, padding);
+      });
     },
 
-    initHotSpotEvents: function(canvasId, events, elements) {  
+    displayAllHotspotTexts: function(canvasId, color) {
+      hotspots[canvasId].forEach(function(hs) {
+          displayText(canvasId, hs.name, hs.x, hs.y, color);
+      });
+    },
+
+    initHotSpotEvents: function(canvasId) {
+
+      events = ["mouseover", "click", "mouseout"];  
 
       events.forEach(function(e) {
         canvases[canvasId].addEventListener(e, function(event) {
           var x = event.pageX - canvases[canvasId].offsetLeft;
           var y = event.pageY - canvases[canvasId].offsetTop;
-           console.log(
-                e + 
-                ' @ (' + x + ',' + y + ')'
-              );   
+           console.log(e + ' @ (' + x + ',' + y + ')');   
 
-          elements.forEach(function(el) {
-            if (y > el.y - el.size && 
-                y < el.y + el.size && 
-                x > el.x - el.size && 
-                x < el.x + el.size) {
-              console.log(
-                  e +
-                ' element:' + 
-                el.name + 
-                ' @ (' + x + ',' + y + ')'
-              );       
+          hotspots[canvasId].forEach(function(hs) {
+            if (y > hs.y - hs.size && 
+                y < hs.y + hs.size && 
+                x > hs.x - hs.size && 
+                x < hs.x + hs.size) {
+              console.log(e + ' on hotspot:' + hs.name + ' @ (' + x + ',' + y + ')');       
             }
           });
         }, false);
-        
       });
   }
 };
 
 function getCalculatedHeight(imgWidth, imgHeight, desiredImgWidth) {
-
     var yxRatio = imgHeight / imgWidth;
     var myImgHeight = desiredImgWidth * yxRatio;
-
     return myImgHeight;
 }
 
@@ -108,35 +89,30 @@ function setCanvasSize(canvasId, width, height) {
     contexts[canvasId].canvas.height = height;
 }
 
-function checkIfHotspot(canvasId, e, padding, elements) {
+function renderHotspots(canvasId, e, padding) {
     var x = e.clientX - canvases[canvasId].offsetLeft;
     var y = e.clientY - canvases[canvasId].offsetTop;
     var isHotspot = false;
 
-    elements.forEach(function(el) {
-          if (y > el.y - el.size && 
-              y < el.y + el.size && 
-              x > el.x - el.size && 
-              x < el.x + el.size) {
-            isHotspot = true;
-            updateHotspot(canvasId, el.x, el.y, 'red', padding);
-            renderHotspots(canvasId, 'black', elements);
-            displayDialogue(canvasId, el);
-          }
-          else{
-            isHotspot = false;
-          }
-        });
-
-    return isHotspot;
+    hotspots[canvasId].forEach(function(hs) {
+      if (y > hs.y - hs.size && 
+          y < hs.y + hs.size && 
+          x > hs.x - hs.size && 
+          x < hs.x + hs.size) {
+        isHotspot = true;
+        updateHotspot(canvasId, hs, padding);
+        displayText(canvasId, hs.name, x, y, hs.color);
+        displayDialogue(canvasId, hs);
+      }
+    });
 }
 
-function displayDialogue(canvasId, el){
+function displayDialogue(canvasId, hs){
     var originalCanvasHeight = contexts[canvasId].canvas.height;
-    displayText(canvasId, el.text, 0, originalCanvasHeight - 100);
+    displayText(canvasId, hs.text, 0, originalCanvasHeight - 100);
 }
 
-function displayText(canvasId, text, x, y){
+function displayText(canvasId, text, x, y, color){
     var words = text.split(' ');
     var line = '';
     var maxWidth = contexts[canvasId].canvas.width;
@@ -157,7 +133,7 @@ function displayText(canvasId, text, x, y){
 
     contexts[canvasId].font = "14pt Georgia";
     contexts[canvasId].fillText(line, x, y);
-    contexts[canvasId].fillStyle = "black";
+    contexts[canvasId].fillStyle = color;
 }
 
 function refreshCanvas(canvasId, padding) {
@@ -171,32 +147,15 @@ function refreshCanvas(canvasId, padding) {
     );
 }
 
-function renderHotspots(canvasId, color, elements) {
-    // Render elements.
-    elements.forEach(function(element) {
-        drawHotspot(canvasId, element.x, element.y, element.size, color);
-        displayText(canvasId, element.name, element.x - 30, element.y)
-    });
-}
-
 function drawHotspot(canvasId, x, y, size, color) {
   contexts[canvasId].beginPath();
   contexts[canvasId].arc(x, y , size, 0, 2*Math.PI);
   contexts[canvasId].strokeStyle = color;
-  contexts[canvasId].lineWidth = 3;
+  contexts[canvasId].lineWidth = 1;
   contexts[canvasId].stroke();
 }
 
-function updateHotspot(canvasId, x, y, color, padding) {
+function updateHotspot(canvasId, hs, padding) {
   refreshCanvas(canvasId, padding);
-  drawHotspot(canvasId, x, y, 50, color);
-}
-
-function initCanvasEvents(canvasId, events) {
-  events.forEach(function(e) {
-    canvases[canvasId].addEventListener(e.name, function(event) {
-      e.result;
-      renderHotspots(canvasId, '#0096de');
-    }, false);
-  });
+  drawHotspot(canvasId, hs.x, hs.y, hs.size, hs.color);
 }
