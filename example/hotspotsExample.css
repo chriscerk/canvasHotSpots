@@ -1,5 +1,4 @@
 canvas {
-    margin: 30px;
     z-index: 100;
 }
 
@@ -7,4 +6,17 @@ html, body {
   width:  100%;
   height: 100%;
   margin: 0px;
+}
+
+main {
+	margin: 30px;
+}
+
+button {
+	border: none;
+	font-size: 16px;
+	background-color: forestgreen;
+	padding: 15px;
+	color: white;
+	border-radius: 7px;
 }
