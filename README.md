@@ -10,6 +10,6 @@ HTML5's canvas is a static element. "Hotspots" overcome this problem by providin
 
 ## Images of Example
 
-![Example Little Hotspot](/example/littleHotspot.PNG?raw=true "Example Little Hotspot")
+![Example Little Hotspot](/littleHotspot.PNG?raw=true "Example Little Hotspot")
 
-![Example Big Hotspot](/example/bigHotspot.PNG?raw=true "Example Big Hotspot")
+![Example Big Hotspot](/bigHotspot.PNG?raw=true "Example Big Hotspot")
