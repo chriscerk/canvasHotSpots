@@ -61,8 +61,9 @@ var hotspotsModule = {
 
       events.forEach(function(e) {
         canvases[canvasId].addEventListener(e, function(event) {
-          var x = event.pageX - canvases[canvasId].offsetLeft;
-          var y = event.pageY - canvases[canvasId].offsetTop;
+          var mousePosition = getMousePosition(contexts[canvasId].canvas, e);
+          var x = mousePosition.x;
+          var y = mousePosition.y;
            console.log(e + ' @ (' + x + ',' + y + ')');   
 
           hotspots[canvasId].forEach(function(hs) {
@@ -90,8 +91,9 @@ function setCanvasSize(canvasId, width, height) {
 }
 
 function renderHotspots(canvasId, e, padding) {
-    var x = e.clientX - canvases[canvasId].offsetLeft;
-    var y = e.clientY - canvases[canvasId].offsetTop;
+    var mousePosition = getMousePosition(contexts[canvasId].canvas, e);
+    var x = mousePosition.x;
+    var y = mousePosition.y;
     var isHotspot = false;
 
     hotspots[canvasId].forEach(function(hs) {
@@ -108,9 +110,16 @@ function renderHotspots(canvasId, e, padding) {
 }
 
 function displayDialogue(canvasId, hs){
-    var originalCanvasHeight = contexts[canvasId].canvas.height;
-    displayText(canvasId, hs.text, 0, originalCanvasHeight - 100);
+    displayText(canvasId, hs.text, 0, 100);
 }
+
+ function getMousePosition(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top
+    };
+  }
 
 function displayText(canvasId, text, x, y, color){
     var words = text.split(' ');
