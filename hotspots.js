@@ -61,7 +61,7 @@ var hotspotsModule = {
 
       events.forEach(function(e) {
         canvases[canvasId].addEventListener(e, function(event) {
-          var mousePosition = getMousePosition(contexts[canvasId].canvas, e);
+          var mousePosition = getMousePosition(contexts[canvasId].canvas, event);
           var x = mousePosition.x;
           var y = mousePosition.y;
            console.log(e + ' @ (' + x + ',' + y + ')');   
